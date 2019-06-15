@@ -4,52 +4,110 @@ const { exec } = require('child_process');
 const appList = require('./list.json');
 
 const app = express();
+const modulePath = '~/.module';
+const url = {
+    xampp: 'https://www101.zippyshare.com/d/jwzpMWo5/304317/xampp-linux-x64-7.2.19-1-installer.run',
+    android: 'https://dl.google.com/dl/android/studio/ide-zips/3.4.1.0/android-studio-ide-183.5522156-linux.tar.gz'
+};
 
 app
 .use(bodyParser.json())
 .use('/api/web', async function(req, res) {
-    const cc = await exec('wget -P ~/ https://az764295.vo.msecnd.net/stable/c7d83e57cd18f18026a8162d042843bda1bcf21f/code_1.35.1-1560350270_amd64.deb', async function(error, stderr, stdout){
+    const command = `mkdir -p ${modulePath} && wget -P ${modulePath} ${url.xampp}`;
+    await exec( command, { timeout: 600 * 1000, maxBuffer: 150 * 1024 * 1024, }, function(error, stderr, stdout) {
         if (error) {
             return res.status(500).json({
-                message: 'Internal server error',
-                error: error
+                success: false,
+                code: 500,
+                message: 'error while download source',
+                result: error
             });
         }
-        const xampp = await exec('wget -P ~ https://images.unsplash.com/photo-1560507074-b9eb43faab00?ixlib=rb-1.2.1&q=85&fm=jpg&crop=entropy&cs=srgb&dl=pawel-czerwinski-1678552-unsplash.jpg', function(error, stderr, stdout){
-            console.log(`stderr: ${stderr}\nstdout: ${stdout}\nerror: ${error}`);
+        exec(`ls ${modulePath} | grep xampp`, function(error, stderr, stdout){
             if (error) {
                 return res.status(500).json({
-                    message: 'Internal server error',
-                    error: error
+                    success: false,
+                    code: 404,
+                    message: 'file not found',
+                    result: error
                 });
             }
-            return {stderr,stdout};
+            exec(`gksudo "./${modulePath}/xampp-linux-x64-7.2.19-1-installer.run"`, function(error, stderr, stdout){
+                if (error) {
+                    return res.status(500).json({
+                        success: false,
+                        code: 500,
+                        message: 'error while executing command',
+                        result: error
+                    });
+                }
+                res.status(200).json({
+                    success: true,
+                    code: 200,
+                    message: 'success installing web module',
+                    result: {
+                        stdout: stdout,
+                        stderr: stderr,
+                    }
+                });
+            })
         })
-        res.status(200).json(`stderr: ${stderr}\nstdout: ${stdout}\nxampp: ${xampp}`);
     });
 })
-.use('/api/multimed', function(req, res){
-    exec('gksudo "apt install blender inkscape gimp -y"', function(error, stdout, stderr) {
+.use('/api/multimedia', function(req, res){
+    exec('gksudo "apt install inkscape blender gimp -y"', function(error, stdout, stderr) {
         console.log(error, stderr, stdout);
         if (error) {
             return res.status(500).json({
+                success: false,
+                code: 500,
                 message: 'Internal server error',
-                error: error
+                result: error
             });
         }
-        res.status(200).json({stderr, stdout});
+        res.status(200).json({
+            success: true,
+            code: 200,
+            message: 'success installing multimedia module',
+            result: {
+                stdout: stdout.replace(/\n/g, ''),
+                stderr: stderr.replace(/\n/g, ''),
+                error: error ? error.replace(/\n/g, '') : error,
+            }
+        });
     });
 })
 .use('/api/mobile', function(req, res){
-    exec('wget -P ~ https://dl.google.com/dl/android/studio/ide-zips/3.4.1.0/android-studio-ide-183.5522156-linux.tar.gz', function(error, stdout, stderr) {
+    exec('gksudo "apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386 lib32z1 libbz2-1.0:i386"', function(error, stdout, stderr) {
         console.log(error, stderr, stdout);
         if (error) {
             return res.status(500).json({
-                message: 'Internal server error',
-                error: error
+                success: false,
+                code: 500,
+                message: 'Error while installing dependencies',
+                result: error
             });
         }
-        res.status(200).json({stderr, stdout});
+        exec(`wget -P ${modulePath} ${url.android}`, function(error, stdout, stderr){
+            if (error) {
+                return res.status(500).json({
+                    success: false,
+                    code: 500,
+                    message: 'Error while downloading android studio',
+                    result: error
+                });
+            }
+            exec(`gksudo "unzip ${modulePath}/android-studio-ide-183.5522156-linux.tar.gz /usr/local && chmod -R 777 /usr/local/android-studio"`, function(error, stdout, stderr){
+                if (error) {
+                    return res.status(500).json({
+                        success: false,
+                        code: 500,
+                        message: 'Error while installing android studio',
+                        result: error
+                    });
+                }
+            })
+        })
     });
 })
 .listen(3000, function(){
