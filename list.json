@@ -1,0 +1,10 @@
+{
+    "web": [
+        "apache2 ",
+        "mysql ",
+        "php ",
+        "phpmyadmin ",
+        "php-mbstring ",
+        "php-gettext "
+    ]
+}
