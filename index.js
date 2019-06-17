@@ -88,16 +88,16 @@ app
                 result: error
             });
         }
-        exec(`wget -P ${modulePath} ${url.android}`, function(error, stdout, stderr){
+        exec('gksudo "apt-add-repository ppa:maarten-fonville/android-studio && apt update', function(error, stdout, stderr){
             if (error) {
                 return res.status(500).json({
                     success: false,
                     code: 500,
-                    message: 'Error while downloading android studio',
+                    message: 'Error while adding ppa to list',
                     result: error
                 });
             }
-            exec(`gksudo "unzip ${modulePath}/android-studio-ide-183.5522156-linux.tar.gz /usr/local && chmod -R 777 /usr/local/android-studio"`, function(error, stdout, stderr){
+            exec('gksudo "apt install android-studio"', function(error, stdout, stderr){
                 if (error) {
                     return res.status(500).json({
                         success: false,
@@ -106,6 +106,11 @@ app
                         result: error
                     });
                 }
+								return res.status(200).json({
+										stdout: stdout.replace(/\n/g, ''),
+										stderr: stderr.replace(/\n/g, ''),
+										error: error ? error.replace(/\n/g, '') : error,
+								});
             })
         })
     });
