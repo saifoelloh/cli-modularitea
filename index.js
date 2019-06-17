@@ -137,6 +137,7 @@ app
     const storage = Math.round(list[0].size / Math.pow(1024,3));
     const ram = Math.round(os.totalmem() / Math.pow(1024,3));
     res.status(200).json({
+        code: 200,
         hostname: os.hostname(),
         processor: os.cpus()[0].model,
         storage: storage,
