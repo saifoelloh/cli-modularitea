@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { exec } = require('child_process');
 const appList = require('./list.json');
+const os = require('os');
+const drivelist = require('drivelist');
 
 const app = express();
 const modulePath = '~/.module';
@@ -28,7 +30,7 @@ app
                     result: error
                 });
             }
-            exec(`pkexec apt install phpmyadmin -y`, function(error, stderr, stdout){
+            exec(`pkexec apt install phpmyadmin -y`, function(error, stdout, stderr){
                 if (error) {
                     return res.status(500).json({
                         success: false,
@@ -129,6 +131,17 @@ app
             })
         })
     });
+})
+.use('/api/about', async function(req, res) {
+    const list = await drivelist.list();
+    const storage = Math.round(list[0].size / Math.pow(1024,3));
+    const ram = Math.round(os.totalmem() / Math.pow(1024,3));
+    res.status(200).json({
+        hostname: os.hostname(),
+        processor: os.cpus()[0].model,
+        storage: storage,
+        ram: ram,
+    })
 })
 .listen(port, function(){
     console.log(`your app listing to port ${port}`);
