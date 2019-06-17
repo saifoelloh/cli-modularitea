@@ -9,7 +9,7 @@ const modulePath = '~/.module';
 app
 .use(bodyParser.json())
 .use('/api/web', async function(req, res) {
-    await exec( `mkdir -P ${modulePath}`, { timeout: 120 * 1000 }, function(error) {
+    await exec( `mkdir -p ${modulePath}`, { timeout: 120 * 1000 }, function(error) {
         if (error) {
             return res.status(500).json({
                 success: false,
@@ -18,7 +18,7 @@ app
                 result: error
             });
         }
-        exec('gksudo "apt install lamp-server^ -y"', function(error){
+        exec('pkexec "apt install lamp-server^ -y"', function(error){
             if (error) {
                 return res.status(500).json({
                     success: false,
@@ -27,7 +27,7 @@ app
                     result: error
                 });
             }
-            exec(`gksudo "apt install phpmyadmin -y"`, function(error, stderr, stdout){
+            exec(`pkexec "apt install phpmyadmin -y"`, function(error, stderr, stdout){
                 if (error) {
                     return res.status(500).json({
                         success: false,
@@ -51,7 +51,7 @@ app
     });
 })
 .use('/api/multimedia', function(req, res){
-    exec(`mkdir -P ${modulePath}`, function(error) {
+    exec(`mkdir -p ${modulePath}`, function(error) {
         if (error) {
             return res.status(500).json({
                 success: false,
@@ -60,7 +60,7 @@ app
                 result: error
             });
         }
-        exec('gksudo "apt install inkscape gimp blender -y"', function(error, stdout, stderr) {
+        exec('pkexec "apt install inkscape gimp blender -y"', function(error, stdout, stderr) {
             if (error) {
                 return res.status(500).json({
                     success: false,
@@ -83,7 +83,7 @@ app
     });
 })
 .use('/api/mobile', function(req, res){
-    exec(`mkdir -P ${modulePath}`, function(error) {
+    exec(`mkdir -p ${modulePath}`, function(error) {
         if (error) {
             return res.status(500).json({
                 success: false,
@@ -93,7 +93,7 @@ app
             });
         }
     })
-    exec('gksudo "apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386 lib32z1 libbz2-1.0:i386"', function(error) {
+    exec('pkexec "apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386 lib32z1 libbz2-1.0:i386"', function(error) {
         if (error) {
             return res.status(500).json({
                 success: false,
@@ -102,7 +102,7 @@ app
                 result: error
             });
         }
-        exec('gksudo "apt-add-repository ppa:maarten-fonville/android-studio && apt update', function(error){
+        exec('pkexec "apt-add-repository ppa:maarten-fonville/android-studio && apt update', function(error){
             if (error) {
                 return res.status(500).json({
                     success: false,
@@ -111,7 +111,7 @@ app
                     result: error
                 });
             }
-            exec('gksudo "apt install android-studio"', function(error, stdout, stderr){
+            exec('pkexec "apt install android-studio"', function(error, stdout, stderr){
                 if (error) {
                     return res.status(500).json({
                         success: false,
