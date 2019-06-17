@@ -5,6 +5,7 @@ const appList = require('./list.json');
 
 const app = express();
 const modulePath = '~/.module';
+const port = 3333;
 
 app
 .use(bodyParser.json())
@@ -18,7 +19,7 @@ app
                 result: error
             });
         }
-        exec('pkexec "apt install lamp-server^ -y"', function(error){
+        exec('pkexec apt-get install lamp-server^ -y', function(error){
             if (error) {
                 return res.status(500).json({
                     success: false,
@@ -27,7 +28,7 @@ app
                     result: error
                 });
             }
-            exec(`pkexec "apt install phpmyadmin -y"`, function(error, stderr, stdout){
+            exec(`pkexec apt install phpmyadmin -y`, function(error, stderr, stdout){
                 if (error) {
                     return res.status(500).json({
                         success: false,
@@ -60,7 +61,7 @@ app
                 result: error
             });
         }
-        exec('pkexec "apt install inkscape gimp blender -y"', function(error, stdout, stderr) {
+        exec('pkexec apt install inkscape gimp blender -y', function(error, stdout, stderr) {
             if (error) {
                 return res.status(500).json({
                     success: false,
@@ -93,7 +94,7 @@ app
             });
         }
     })
-    exec('pkexec "apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386 lib32z1 libbz2-1.0:i386"', function(error) {
+    exec('pkexec apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386 lib32z1 libbz2-1.0:i386', function(error) {
         if (error) {
             return res.status(500).json({
                 success: false,
@@ -102,7 +103,7 @@ app
                 result: error
             });
         }
-        exec('pkexec "apt-add-repository ppa:maarten-fonville/android-studio && apt update', function(error){
+        exec('pkexec apt-add-repository ppa:maarten-fonville/android-studio && apt update', function(error){
             if (error) {
                 return res.status(500).json({
                     success: false,
@@ -111,7 +112,7 @@ app
                     result: error
                 });
             }
-            exec('pkexec "apt install android-studio"', function(error, stdout, stderr){
+            exec('pkexec apt install android-studio', function(error, stdout, stderr){
                 if (error) {
                     return res.status(500).json({
                         success: false,
@@ -129,6 +130,6 @@ app
         })
     });
 })
-.listen(3333, function(){
-    console.log('your app listing to port 3000');
+.listen(port, function(){
+    console.log(`your app listing to port ${port}`);
 })
