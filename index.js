@@ -5,16 +5,11 @@ const appList = require('./list.json');
 
 const app = express();
 const modulePath = '~/.module';
-const url = {
-    xampp: 'https://www101.zippyshare.com/d/jwzpMWo5/304317/xampp-linux-x64-7.2.19-1-installer.run',
-    android: 'https://dl.google.com/dl/android/studio/ide-zips/3.4.1.0/android-studio-ide-183.5522156-linux.tar.gz'
-};
 
 app
 .use(bodyParser.json())
 .use('/api/web', async function(req, res) {
-    const command = `mkdir -p ${modulePath} && wget -P ${modulePath} ${url.xampp}`;
-    await exec( command, { timeout: 600 * 1000, maxBuffer: 150 * 1024 * 1024, }, function(error, stderr, stdout) {
+    await exec( `mkdir -P ${modulePath}`, { timeout: 120 * 1000 }, function(error) {
         if (error) {
             return res.status(500).json({
                 success: false,
@@ -23,7 +18,7 @@ app
                 result: error
             });
         }
-        exec(`ls ${modulePath} | grep xampp`, function(error, stderr, stdout){
+        exec('gksudo "apt install lamp-server^ -y"', function(error){
             if (error) {
                 return res.status(500).json({
                     success: false,
@@ -32,7 +27,7 @@ app
                     result: error
                 });
             }
-            exec(`gksudo "./${modulePath}/xampp-linux-x64-7.2.19-1-installer.run"`, function(error, stderr, stdout){
+            exec(`gksudo "apt install phpmyadmin -y"`, function(error, stderr, stdout){
                 if (error) {
                     return res.status(500).json({
                         success: false,
@@ -46,8 +41,9 @@ app
                     code: 200,
                     message: 'success installing web module',
                     result: {
-                        stdout: stdout,
-                        stderr: stderr,
+                        stdout: stdout.replace(/\n/g, ''),
+                        stderr: stderr.replace(/\n/g, ''),
+                        error: error ? error.replace(/\n/g, '') : error,
                     }
                 });
             })
@@ -55,8 +51,7 @@ app
     });
 })
 .use('/api/multimedia', function(req, res){
-    exec('gksudo "apt install inkscape blender gimp -y"', function(error, stdout, stderr) {
-        console.log(error, stderr, stdout);
+    exec(`mkdir -P ${modulePath}`, function(error) {
         if (error) {
             return res.status(500).json({
                 success: false,
@@ -65,21 +60,30 @@ app
                 result: error
             });
         }
-        res.status(200).json({
-            success: true,
-            code: 200,
-            message: 'success installing multimedia module',
-            result: {
-                stdout: stdout.replace(/\n/g, ''),
-                stderr: stderr.replace(/\n/g, ''),
-                error: error ? error.replace(/\n/g, '') : error,
+        exec('gksudo "apt install inkscape gimp blender -y"', function(error, stdout, stderr) {
+            if (error) {
+                return res.status(500).json({
+                    success: false,
+                    code: 500,
+                    message: 'Internal server error',
+                    result: error
+                });
             }
-        });
+            res.status(200).json({
+                success: true,
+                code: 200,
+                message: 'success installing multimedia module',
+                result: {
+                    stdout: stdout.replace(/\n/g, ''),
+                    stderr: stderr.replace(/\n/g, ''),
+                    error: error ? error.replace(/\n/g, '') : error,
+                }
+            });
+        })
     });
 })
 .use('/api/mobile', function(req, res){
-    exec('gksudo "apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386 lib32z1 libbz2-1.0:i386"', function(error, stdout, stderr) {
-        console.log(error, stderr, stdout);
+    exec(`mkdir -P ${modulePath}`, function(error) {
         if (error) {
             return res.status(500).json({
                 success: false,
@@ -88,7 +92,17 @@ app
                 result: error
             });
         }
-        exec('gksudo "apt-add-repository ppa:maarten-fonville/android-studio && apt update', function(error, stdout, stderr){
+    })
+    exec('gksudo "apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386 lib32z1 libbz2-1.0:i386"', function(error) {
+        if (error) {
+            return res.status(500).json({
+                success: false,
+                code: 500,
+                message: 'Error while installing dependencies',
+                result: error
+            });
+        }
+        exec('gksudo "apt-add-repository ppa:maarten-fonville/android-studio && apt update', function(error){
             if (error) {
                 return res.status(500).json({
                     success: false,
@@ -106,11 +120,11 @@ app
                         result: error
                     });
                 }
-								return res.status(200).json({
-										stdout: stdout.replace(/\n/g, ''),
-										stderr: stderr.replace(/\n/g, ''),
-										error: error ? error.replace(/\n/g, '') : error,
-								});
+                return res.status(200).json({
+                        stdout: stdout.replace(/\n/g, ''),
+                        stderr: stderr.replace(/\n/g, ''),
+                        error: error ? error.replace(/\n/g, '') : error,
+                });
             })
         })
     });
