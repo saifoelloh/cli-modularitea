@@ -124,6 +124,8 @@ app
                     });
                 }
                 return res.status(200).json({
+                        success: true,
+                        code: 200,
                         stdout: stdout.replace(/\n/g, ''),
                         stderr: stderr.replace(/\n/g, ''),
                         error: error ? error.replace(/\n/g, '') : error,
