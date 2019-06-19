@@ -95,8 +95,8 @@ app
                 result: error
             });
         }
-    })
-    exec('pkexec apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386 lib32z1 libbz2-1.0:i386', function(error) {
+    });
+    exec('pkexec apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386 lib32z1 libbz2-1.0:i386', async function(error) {
         if (error) {
             return res.status(500).json({
                 success: false,
@@ -105,34 +105,44 @@ app
                 result: error
             });
         }
-        exec('pkexec apt-add-repository ppa:maarten-fonville/android-studio && apt update', function(error){
+        await exec('pkexec apt-add-repository ppa:maarten-fonville/android-studio && ppa:linuxgndu/sqlitebrowser', function(error){
             if (error) {
                 return res.status(500).json({
                     success: false,
                     code: 500,
-                    message: 'Error while adding ppa to list',
+                    message: 'Error while adding ppa to local repo',
                     result: error
                 });
             }
-            exec('pkexec apt install android-studio', function(error, stdout, stderr){
-                if (error) {
-                    return res.status(500).json({
-                        success: false,
-                        code: 500,
-                        message: 'Error while installing android studio',
-                        result: error
-                    });
-                }
-                return res.status(200).json({
-                        success: true,
-                        code: 200,
-                        stdout: stdout.replace(/\n/g, ''),
-                        stderr: stderr.replace(/\n/g, ''),
-                        error: error ? error.replace(/\n/g, '') : error,
+        });
+        await exec('pkexec apt update', function(error) {
+            if (error) {
+                return res.status(500).json({
+                    success: false,
+                    code: 500,
+                    message: 'Error while updating repo\'s',
+                    result: error
                 });
-            })
+            }
+        });
+        await exec('pkexec apt install android-studio', function(error, stdout, stderr){
+            if (error) {
+                return res.status(500).json({
+                    success: false,
+                    code: 500,
+                    message: 'Error while installing android studio',
+                    result: error
+                });
+            }
+            return res.status(200).json({
+                    success: true,
+                    code: 200,
+                    stdout: stdout.replace(/\n/g, ''),
+                    stderr: stderr.replace(/\n/g, ''),
+                    error: error ? error.replace(/\n/g, '') : error,
+            });
         })
-    });
+    })
 })
 .use('/api/about', async function(req, res) {
     const list = await drivelist.list();
