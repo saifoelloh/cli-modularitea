@@ -30,7 +30,7 @@ app
                     result: error
                 });
             }
-            exec(`pkexec apt install phpmyadmin -y`, function(error, stdout, stderr){
+            exec(`pkexec apt install phpmyadmin composer -y`, function(error, stdout, stderr){
                 if (error) {
                     return res.status(500).json({
                         success: false,
